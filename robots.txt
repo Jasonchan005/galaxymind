@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://galaxy-mind.vercel.app/sitemap.xml
+Sitemap: https://mind-galaxy.vercel.app/sitemap.xml
