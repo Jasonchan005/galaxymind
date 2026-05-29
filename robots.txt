@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://galaxymind.vercel.app/sitemap.xml

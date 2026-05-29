@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-503ZSLGF0W"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-503ZSLGF0W');
+    function trackEvent(action, params) {
+      if (typeof gtag === 'function') gtag('event', action, params || {});
+    }
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GalaxyMind – 3D Knowledge Graph Generator | AI Mind Map from Text</title>
+  <meta name="description" content="Turn any text, news article, or document into a stunning 3D knowledge graph. Paste text, upload PDF/Word, or enter a URL — GalaxyMind automatically extracts entities and relationships.">
+  <meta name="keywords" content="knowledge graph, 3D mind map, AI mind map, knowledge graph generator, text to graph, entity relationship, news analysis">
+  <meta property="og:title" content="GalaxyMind – 3D Knowledge Graph Generator">
+  <meta property="og:description" content="Turn text into stunning 3D knowledge graphs. Free, no sign-up.">
+  <meta property="og:url" content="https://galaxymind.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GalaxyMind">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="GalaxyMind – 3D Knowledge Graph Generator">
+  <meta name="twitter:description" content="Turn text into stunning 3D knowledge graphs. Free, no sign-up.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="canonical" href="https://galaxymind.vercel.app/">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; margin: 0; overflow: hidden; background: #0a0a1a; color: white; }
+    #ui-overlay { position: absolute; top: 0; left: 0; right: 0; z-index: 20; pointer-events: none; }
+    #ui-overlay > * { pointer-events: auto; }
+    .header { text-align: center; padding: 18px 16px 10px; }
+    .header h1 { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #a78bfa, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header p { font-size: 12px; color: #64748b; margin-top: 2px; }
+    
+    .input-panel { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 20; width: 90%; max-width: 700px; pointer-events: none; }
+    .input-panel > * { pointer-events: auto; }
+    .input-tabs { display: flex; gap: 4px; margin-bottom: 6px; }
+    .input-tab { padding: 6px 14px; background: rgba(30,41,59,0.9); border: 1px solid #334155; border-radius: 8px 8px 0 0; color: #94a3b8; font-size: 12px; cursor: pointer; font-weight: 500; }
+    .input-tab.active { background: rgba(15,23,42,0.95); border-color: #7c3aed; color: #a78bfa; }
+    .input-body { background: rgba(15,23,42,0.95); border: 1px solid #334155; border-radius: 0 8px 8px 8px; padding: 10px; backdrop-filter: blur(10px); }
+    .input-body textarea { width: 100%; padding: 8px; border: 1px solid #334155; border-radius: 6px; background: rgba(0,0,0,0.3); color: #e2e8f0; font-size: 13px; min-height: 50px; resize: vertical; font-family: inherit; outline: none; }
+    .input-body textarea:focus { border-color: #7c3aed; }
+    .input-row { display: flex; gap: 6px; margin-top: 6px; align-items: center; flex-wrap: wrap; }
+    .input-row button { padding: 7px 16px; background: #7c3aed; border: none; border-radius: 6px; color: white; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .input-row button:hover { background: #6d28d9; }
+    .input-row button.secondary { background: #1e293b; border: 1px solid #334155; color: #94a3b8; }
+    .input-row button.secondary:hover { border-color: #7c3aed; color: #a78bfa; }
+    .input-row input[type="file"] { display: none; }
+    .input-row .file-label { padding: 7px 14px; background: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #94a3b8; font-size: 12px; cursor: pointer; }
+    .input-row .file-label:hover { border-color: #7c3aed; color: #a78bfa; }
+    .examples { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+    .example-btn { padding: 3px 10px; background: rgba(30,41,59,0.5); border: 1px solid #334155; border-radius: 4px; color: #64748b; font-size: 11px; cursor: pointer; }
+    .example-btn:hover { border-color: #7c3aed; color: #a78bfa; }
+    .info-bar { position: absolute; top: 68px; left: 50%; transform: translateX(-50%); z-index: 15; font-size: 12px; color: #64748b; text-align: center; pointer-events: none; background: rgba(10,10,26,0.6); padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(51,65,85,0.3); }
+    .tagline { position: absolute; bottom: 4px; right: 12px; font-size: 10px; color: #334155; z-index: 15; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div id="ui-overlay">
+    <div class="header">
+      <h1>🌌 GalaxyMind</h1>
+      <p>Turn any text into a 3D knowledge graph</p>
+    </div>
+  </div>
+  <div class="info-bar">🖱️ Drag to rotate · Scroll to zoom</div>
+
+  <div class="input-panel">
+    <div class="input-tabs">
+      <div class="input-tab active" data-tab="text" onclick="switchTab('text')">✏️ Text</div>
+      <div class="input-tab" data-tab="url" onclick="switchTab('url')">🔗 URL</div>
+      <div class="input-tab" data-tab="file" onclick="switchTab('file')">📄 File</div>
+    </div>
+    <div class="input-body">
+      <!-- Text tab -->
+      <div id="tab-text">
+        <textarea id="inputText" placeholder="Paste any text — news, article, story...">Elon Musk announced Tesla's new self-driving system. Tesla shares rose 5% after the announcement. Competitors like Waymo and Cruise are also developing autonomous driving technology.</textarea>
+        <div class="input-row">
+          <button onclick="generateGraph()">🚀 Generate Graph</button>
+          <div class="examples">
+            <span style="color:#475569;font-size:11px;">Try:</span>
+            <button class="example-btn" onclick="loadExample(1)">Tesla</button>
+            <button class="example-btn" onclick="loadExample(2)">Tech</button>
+            <button class="example-btn" onclick="loadExample(3)">Chinese</button>
+            <button class="example-btn" onclick="loadExample(4)">Politics</button>
+          </div>
+        </div>
+      </div>
+      <!-- URL tab -->
+      <div id="tab-url" class="hidden">
+        <textarea id="inputUrl" placeholder="Paste a news/article URL..."></textarea>
+        <div class="input-row">
+          <button onclick="fetchUrl()">🔍 Fetch & Generate</button>
+          <span style="font-size:11px;color:#475569;">We'll read the page and extract key info</span>
+        </div>
+      </div>
+      <!-- File tab -->
+      <div id="tab-file" class="hidden">
+        <p style="font-size:12px;color:#64748b;margin-bottom:8px;">Upload a PDF or Word document</p>
+        <div class="input-row">
+          <label class="file-label" for="fileInput">📎 Choose File (PDF/DOCX)</label>
+          <input type="file" id="fileInput" accept=".pdf,.docx">
+          <button onclick="processFile()">📄 Extract & Generate</button>
+        </div>
+        <p id="fileStatus" style="font-size:11px;color:#475569;margin-top:4px;"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tagline">GalaxyMind by JCS Labs</div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a1a);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(15, 10, 20);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.prepend(renderer.domElement);
+
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0';
+    labelRenderer.domElement.style.left = '0';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    document.body.prepend(labelRenderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.autoRotate = false;
+    controls.target.set(0, 0, 0);
+    controls.maxPolarAngle = Math.PI / 2;
+
+    const ambientLight = new THREE.AmbientLight(0x404060);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    dirLight.position.set(10, 20, 10);
+    scene.add(dirLight);
+    const backLight = new THREE.DirectionalLight(0x7c3aed, 0.5);
+    backLight.position.set(-10, -5, -10);
+    scene.add(backLight);
+
+    // Stars
+    const starsGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(2000 * 3);
+    for (let i = 0; i < 2000 * 3; i++) starPos[i] = (Math.random() - 0.5) * 200;
+    starsGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    const starsMat = new THREE.PointsMaterial({ color: 0x7c3aed, size: 0.1, transparent: true, opacity: 0.6 });
+    scene.add(new THREE.Points(starsGeo, starsMat));
+
+    let graphGroup = new THREE.Group();
+    scene.add(graphGroup);
+
+    const KNOWN = {
+      '特斯拉': '#f59e0b', '比亚迪': '#22c55e', '马斯克': '#ef4444',
+      '苹果': '#a855f7', '苹果公司': '#a855f7', '三星': '#3b82f6',
+      '谷歌': '#22c55e', '华为': '#ef4444', '高通': '#06b6d4',
+      '丰田': '#f59e0b', '大众': '#3b82f6', '奔驰': '#22c55e',
+      '宝马': '#3b82f6', '蔚来': '#22c55e', '小鹏': '#3b82f6',
+      '理想': '#f59e0b', 'Waymo': '#a855f7', 'Cruise': '#ef4444',
+      'OpenAI': '#22c55e', 'Microsoft': '#3b82f6', 'Google': '#22c55e',
+      'Amazon': '#f59e0b', 'Meta': '#3b82f6', 'Twitter': '#3b82f6',
+      '拜登': '#3b82f6', '特朗普': '#ef4444', '普京': '#ef4444',
+      '习近平': '#ef4444', '美联储': '#f59e0b', '国会': '#3b82f6',
+      'Model 3': '#f59e0b', 'iPhone': '#a855f7', 'Android': '#22c55e',
+    };
+
+    const VERBS = ['发布','推出','收购','投资','合作','竞争','反对','支持','宣布','推出','推出','降价','涨价','起诉','辞职','当选','任命','推出','研发'];
+
+    function extractGraph(text) {
+      const nodes = [{ id: 'root', label: '📄 Source', color: '#7c3aed' }];
+      const edges = [];
+      const found = Object.keys(KNOWN).filter(k => text.includes(k));
+      found.forEach(name => {
+        nodes.push({ id: name, label: name, color: KNOWN[name] });
+        edges.push({ from: 'root', to: name });
+      });
+      VERBS.forEach(v => {
+        let idx = text.indexOf(v);
+        while (idx !== -1) {
+          const before = text.substring(Math.max(0, idx - 25), idx);
+          const after = text.substring(idx + v.length, idx + v.length + 25);
+          const subj = found.find(e => before.includes(e));
+          const obj = found.find(e => after.includes(e));
+          if (subj && obj) {
+            if (!edges.find(e => e.from === subj && e.to === obj && e.label === v)) {
+              edges.push({ from: subj, to: obj, label: v });
+            }
+          }
+          idx = text.indexOf(v, idx + 1);
+        }
+      });
+      return { nodes, edges };
+    }
+
+    window.generateGraph = function() {
+      const text = document.getElementById('inputText').value.trim();
+      if (!text) return;
+      generateFromText(text);
+      trackEvent('generate', { source: 'text', tool: 'galaxymind' });
+    };
+
+    function generateFromText(text) {
+      while(graphGroup.children.length) graphGroup.remove(graphGroup.children[0]);
+
+      const { nodes, edges } = extractGraph(text);
+      const nodeMap = {};
+      const positions = [];
+      const sphereRadius = 6;
+      const nonRoot = nodes.filter(n => n.id !== 'root');
+      const total = nonRoot.length;
+
+      const goldenRatio = (1 + Math.sqrt(5)) / 2;
+      nonRoot.forEach((n, i) => {
+        const theta = 2 * Math.PI * i / goldenRatio;
+        const phi = Math.acos(1 - 2 * (i + 0.5) / total);
+        const r = sphereRadius;
+        const pos = { x: r * Math.sin(phi) * Math.cos(theta), y: r * Math.sin(phi) * Math.sin(theta), z: r * Math.cos(phi) };
+        positions.push(pos);
+        nodeMap[n.id] = { ...n, pos };
+      });
+
+      if (nodes.find(n => n.id === 'root')) {
+        positions.unshift({ x: 0, y: 0, z: 0 });
+        nodeMap['root'] = { id: 'root', label: '📄 Source', color: '#7c3aed', pos: { x: 0, y: 0, z: 0 } };
+      }
+
+      // Ring
+      const ringPts = [];
+      for (let i = 0; i <= 60; i++) {
+        const a = (i / 60) * Math.PI * 2;
+        ringPts.push(new THREE.Vector3(sphereRadius * Math.cos(a), sphereRadius * Math.sin(a), 0));
+      }
+      const ring = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(ringPts),
+        new THREE.LineBasicMaterial({ color: 0x7c3aed, transparent: true, opacity: 0.12 })
+      );
+      graphGroup.add(ring);
+
+      // Nodes
+      nodes.forEach((n, i) => {
+        const pos = positions[i];
+        if (!pos) return;
+        const color = new THREE.Color(n.color);
+        const dot = new THREE.Mesh(
+          new THREE.SphereGeometry(n.id === 'root' ? 0.3 : 0.15, 8, 8),
+          new THREE.MeshPhongMaterial({ color, emissive: color, emissiveIntensity: 0.8 })
+        );
+        dot.position.set(pos.x, pos.y, pos.z);
+        graphGroup.add(dot);
+
+        const div = document.createElement('div');
+        div.textContent = n.label;
+        div.style.cssText = 'color:#cbd5e1;font-size:11px;font-weight:500;text-shadow:0 0 8px rgba(0,0,0,0.9);background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;pointer-events:none;';
+        const label = new CSS2DObject(div);
+        label.position.set(pos.x, pos.y - 0.5, pos.z);
+        graphGroup.add(label);
+      });
+
+      // Edges
+      edges.forEach(e => {
+        const from = nodeMap[e.from], to = nodeMap[e.to];
+        if (!from || !to) return;
+
+        const mid = new THREE.Vector3(
+          (from.pos.x + to.pos.x) / 2, (from.pos.y + to.pos.y) / 2, (from.pos.z + to.pos.z) / 2
+        );
+        const mLen = Math.sqrt(mid.x*mid.x + mid.y*mid.y + mid.z*mid.z);
+        if (mLen > 0.1) { mid.x *= 0.5/mLen; mid.y *= 0.5/mLen; mid.z *= 0.5/mLen; }
+
+        const curve = new THREE.QuadraticBezierCurve3(
+          new THREE.Vector3(from.pos.x, from.pos.y, from.pos.z),
+          mid,
+          new THREE.Vector3(to.pos.x, to.pos.y, to.pos.z)
+        );
+
+        const line = new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints(curve.getPoints(30)),
+          new THREE.LineBasicMaterial({ color: 0x7c3aed, transparent: true, opacity: 0.35 })
+        );
+        graphGroup.add(line);
+
+        const particle = new THREE.Mesh(
+          new THREE.SphereGeometry(0.08, 6, 6),
+          new THREE.MeshBasicMaterial({ color: 0xc4b5fd, transparent: true, opacity: 0.9 })
+        );
+        const c = curve.clone();
+        particle.userData = { curve: c, t: Math.random(), speed: 0.003 + Math.random() * 0.004 };
+        particle.position.copy(c.getPoint(particle.userData.t));
+        graphGroup.add(particle);
+
+        if (e.label) {
+          const cm = curve.getPoint(0.5);
+          const d = document.createElement('div');
+          d.textContent = e.label;
+          d.style.cssText = 'color:#c4b5fd;font-size:10px;font-weight:500;background:rgba(15,15,35,0.7);padding:1px 5px;border-radius:3px;border:1px solid rgba(167,139,250,0.2);';
+          const l = new CSS2DObject(d);
+          l.position.copy(cm);
+          graphGroup.add(l);
+        }
+      });
+    }
+
+    // ─── Animation ──────────────────────────────────────────
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      graphGroup.children.forEach(child => {
+        if (child.userData && child.userData.curve) {
+          child.userData.t += child.userData.speed;
+          if (child.userData.t > 1) child.userData.t = 0;
+          child.position.copy(child.userData.curve.getPoint(child.userData.t));
+        }
+      });
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // ─── Tab Switching ──────────────────────────────────────
+    window.switchTab = function(tab) {
+      document.querySelectorAll('.input-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+      ['text','url','file'].forEach(t => document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab));
+    };
+
+    // ─── Examples ───────────────────────────────────────────
+    window.loadExample = function(idx) {
+      const examples = [
+        '',
+        `Elon Musk announced Tesla's new self-driving system. Tesla shares rose 5% after the announcement. Competitors like Waymo and Cruise are also developing autonomous driving technology. Google and Apple are also working on self-driving cars.`,
+        `Microsoft announced a $10 billion investment in OpenAI. Google responded with its own AI initiative. Amazon and Meta are also competing in the AI space.`,
+        `特斯拉宣布 Model 3 降价 20%。比亚迪跟进降价 15%。小鹏汽车表示不会降价。马斯克表示这是为了应对竞争。分析师认为这会影响整个行业。`,
+        `President Biden announced new climate policies. Former President Trump criticized the plan. Congress is divided on the issue. The Federal Reserve warned about economic impacts.`
+      ];
+      document.getElementById('inputText').value = examples[idx];
+      switchTab('text');
+      generateGraph();
+    };
+
+    // ─── URL Fetch ──────────────────────────────────────────
+    window.fetchUrl = function() {
+      const url = document.getElementById('inputUrl').value.trim();
+      if (!url) return;
+      // Use CORS proxy
+      const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+      document.getElementById('inputUrl').placeholder = 'Fetching...';
+      
+      fetch(proxyUrl)
+        .then(r => r.json())
+        .then(data => {
+          const html = data.contents;
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          // Get main content
+          const article = doc.querySelector('article') || doc.querySelector('main') || doc.querySelector('body');
+          const text = article ? article.textContent.substring(0, 3000) : 'Could not extract content.';
+          document.getElementById('inputText').value = text;
+          switchTab('text');
+          generateGraph();
+          document.getElementById('inputUrl').placeholder = 'Paste a news/article URL...';
+          trackEvent('fetch_url', { tool: 'galaxymind' });
+        })
+        .catch(() => {
+          document.getElementById('inputUrl').placeholder = 'Failed to fetch. Try pasting text directly.';
+        });
+    };
+
+    // ─── File Upload ────────────────────────────────────────
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('fileStatus').textContent = '📎 ' + file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+    });
+
+    window.processFile = function() {
+      const file = document.getElementById('fileInput').files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      const ext = file.name.split('.').pop().toLowerCase();
+
+      if (ext === 'pdf') {
+        reader.onload = async function(e) {
+          const data = new Uint8Array(e.target.result);
+          const pdf = await pdfjsLib.getDocument({ data }).promise;
+          let text = '';
+          for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            text += content.items.map(s => s.str).join(' ') + '\n';
+          }
+          document.getElementById('inputText').value = text.substring(0, 5000);
+          switchTab('text');
+          generateGraph();
+          trackEvent('upload_pdf', { tool: 'galaxymind' });
+        };
+        reader.readAsArrayBuffer(file);
+      } else if (ext === 'docx') {
+        reader.onload = function(e) {
+          // For DOCX, use simple text extraction via JSZip-like approach
+          // Since we can't use mammoth easily, show instructions
+          document.getElementById('inputText').value = 'DOCX file loaded: ' + file.name + '\nPlease copy the text manually for now. DOCX parsing coming soon.';
+          switchTab('text');
+          generateGraph();
+        };
+        reader.readAsText(file);
+      }
+      document.getElementById('fileStatus').textContent = 'Processing...';
+    };
+
+    // ─── Auto-generate on load ──────────────────────────────
+    setTimeout(generateGraph, 300);
+  </script>
+</body>
+</html>
